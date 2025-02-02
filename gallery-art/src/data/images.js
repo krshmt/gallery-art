@@ -55,4 +55,15 @@ const images = [
     },
 ]
 
+const imageVoirPlus = [
+    {
+        id: "1-1",
+        src_1: 'https://www.photogaspesie.ca/wp-content/uploads/2023/06/Guillaume_Tomasi_A_bloom_in_the_eye_of_the_storm_01.jpg',
+        src_2: 'https://www.photogaspesie.ca/wp-content/uploads/2023/06/Guillaume_Tomasi_A_bloom_in_the_eye_of_the_storm_01.jpg',
+        src_3: 'https://www.photogaspesie.ca/wp-content/uploads/2023/06/Guillaume_Tomasi_A_bloom_in_the_eye_of_the_storm_01.jpg',
+        title: 'Image 1',
+        description: 'Description 1'
+    }
+]
+
 export default images;
