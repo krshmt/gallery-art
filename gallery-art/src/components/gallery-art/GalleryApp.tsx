@@ -1,8 +1,8 @@
 import { Route, Routes, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
-import images from "../data/images";
-import Detail from './Detail';
+import images from "../../data/images";
+import Detail from '../detail/Detail';
 import Lenis from '@studio-freight/lenis';
 import "./GalleryApp.css";
 
@@ -39,9 +39,9 @@ function GalleryApp() {
         { id: 2, count: 3 },
         { id: 3, count: 4 },
       ];
-      const newItems = rows.map((row) => {
+      const newItems = rows.flatMap((row) => {
         return Array.from({ length: row.count }, (_, index) => {
-          const itemId = `${row.id}-${index}`;
+          const itemId = `${row.id}-${index + 1}`;
           const image = images.find((i) => i.id === itemId);
           return {
             id: itemId,
@@ -81,14 +81,41 @@ function GalleryApp() {
     };
   }, []);
 
+  useEffect(() => {
+    const items = document.querySelectorAll('.item');
+    const positions = [
+      { top: '00%', left: '0%' },
+      { top: '10%', left: '30%' },
+      { top: '40%', left: '40%' },
+      { top: '40%', left: '70%' },
+      { top: '50%', left: '10%' },
+      { top: '60%', left: '30%' },
+      { top: '70%', left: '50%' },
+      { top: '100%', left: '80%' },
+      { top: '90%', left: '10%' },
+      { top: '10%', left: '50%' },
+      { top: '0%', left: '50%' },
+    ];
+
+    items.forEach((item, index) => {
+      const pos = positions[index % positions.length];
+      item.style.top = pos.top;
+      item.style.left = pos.left;
+    });
+  }, [items]);
+
   const handleImageClick = (id: string) => {
     const items = document.querySelectorAll('.item');
     items.forEach(item => {
-      item.style.height = '0';
+      const computedHeight = window.getComputedStyle(item).height;
+      item.style.height = computedHeight;
+      requestAnimationFrame(() => {
+        item.style.height = '0';
+      });
     });
     setTimeout(() => {
       navigate(`/detail/${id}`);
-    }, 500); // Adjust the timeout to match the animation duration
+    }, 500);
   };
 
   return (
@@ -96,26 +123,22 @@ function GalleryApp() {
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={
           <motion.div
-            initial={{ height: 'auto' }}
-            animate={{ height: 'auto' }}
             exit={{ height: 0 }}
             transition={{ duration: 0.5 }}
           >
             <div className="container" ref={containerRef}>
-              <div className="gallery" ref={galleryRef}>
-                {items.map((row, rowIndex) => (
-                  <div key={`row-${rowIndex}`} className="row">
-                    {row.map((item) => (
-                      <motion.div key={item.id} className="item" layout>
-                        <div className="preview-img">
-                          <Link to={`/detail/${item.id}`} onClick={() => handleImageClick(item.id)}>
-                            <img src={item.image.src} alt={item.image.title} />
-                          </Link>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
+              <div className="gallery__container" ref={galleryRef}>
+                <div className="gallery">
+                {items.map((item) => (
+                  <motion.div key={item.id} className="item" layout>
+                    <div className="preview-img">
+                      <Link to={`/detail/${item.id}`} onClick={() => handleImageClick(item.id)}>
+                        <img src={item.image.src} alt={item.image.title} />
+                      </Link>
+                    </div>
+                  </motion.div>
                 ))}
+                </div>
               </div>
             </div>
           </motion.div>

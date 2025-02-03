@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import images from '../data/images';
-import imageVoirPlus from '../data/imageDetail';
+import images from '../../data/images';
+import imageVoirPlus from '../../data/imageDetail';
 import "./Detail.css";
 
 const Detail = () => {
