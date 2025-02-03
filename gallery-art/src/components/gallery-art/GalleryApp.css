@@ -1,7 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap');
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 200;
 }
 
 .container{
@@ -9,7 +13,7 @@
     height: 100vh;
     overflow: hidden;
     position: relative;
-    background-color: rgb(241, 241, 241);
+    background-color: rgb(240, 240, 240);
 }
 
 .gallery__container{
@@ -37,7 +41,7 @@ img {
 .item {
     position: absolute;
     overflow: hidden;
-    transition: height 0.5s ease;
+    transition: height 1s ease;
     max-width: 20vw;
 }
 

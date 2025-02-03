@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import images from "../../data/images";
 import Detail from '../detail/Detail';
 import Lenis from '@studio-freight/lenis';
+import Header from '../header/';
+import Menu from '../menu/';
+import VerticalPixelTransition from '../pixelTransition/vertical/';
 import "./GalleryApp.css";
 
 function GalleryApp() {
@@ -12,6 +15,7 @@ function GalleryApp() {
   const [items, setItems] = useState<any[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
+  const [menuIsActive, setMenuIsActive] = useState(false);
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -127,6 +131,11 @@ function GalleryApp() {
             transition={{ duration: 0.5 }}
           >
             <div className="container" ref={containerRef}>
+            <Header menuIsActive={menuIsActive} setMenuIsActive={setMenuIsActive}/>
+      <Menu menuIsActive={menuIsActive}/>
+      {/* <CenteredPixelTransition menuIsActive={menuIsActive}/> */}
+      {/* <HorizontalPixelTransition menuIsActive={menuIsActive}/> */}
+      <VerticalPixelTransition menuIsActive={menuIsActive}/>
               <div className="gallery__container" ref={galleryRef}>
                 <div className="gallery">
                 {items.map((item) => (
