@@ -28,7 +28,6 @@
 .gallery {
     height: 100%;
     position: relative;
-    transition: transform .1s ease-out;
     padding: 10rem;
 }
 
@@ -41,7 +40,7 @@ img {
 .item {
     position: absolute;
     overflow: hidden;
-    transition: height 1s ease;
+    transition: height 0.5s ease;
     max-width: 20vw;
 }
 

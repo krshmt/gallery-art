@@ -1,6 +1,6 @@
 import { Route, Routes, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import images from "../../data/images";
 import Detail from '../detail/Detail';
 import Lenis from '@studio-freight/lenis';
@@ -16,6 +16,9 @@ function GalleryApp() {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuIsActive, setMenuIsActive] = useState(false);
+  const controls = useAnimation();
+  const requestRef = useRef<number>();
+  const [isMouseAnimationActive, setIsMouseAnimationActive] = useState(true);
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -58,32 +61,52 @@ function GalleryApp() {
     };
     generateItems();
 
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetX = 0;
+    let targetY = 0;
+
     const handleMouseMove = (e: MouseEvent) => {
+      if (!isMouseAnimationActive) return;
+
       const { clientX, clientY, currentTarget } = e;
       const { width, height } = (currentTarget as HTMLElement).getBoundingClientRect();
       const centerX = width / 2;
       const centerY = height / 2;
 
       const sensitivity = 1;
-      const deltaX = (centerX - clientX) / sensitivity;
-      const deltaY = (centerY - clientY) / sensitivity;
+      targetX = (centerX - clientX) / sensitivity;
+      targetY = (centerY - clientY) / sensitivity;
+    };
 
-      if (galleryRef.current) {
-        galleryRef.current.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
-      }
+    const animate = () => {
+      mouseX += (targetX - mouseX) * 0.2; // Increase the factor to make the movement faster
+      mouseY += (targetY - mouseY) * 0.2; // Increase the factor to make the movement faster
+
+      controls.start({
+        x: `calc(-50% + ${mouseX}px)`,
+        y: `calc(-50% + ${mouseY}px)`,
+        transition: { type: "spring", stiffness: 300, damping: 30 }
+      });
+
+      requestRef.current = requestAnimationFrame(animate);
     };
 
     const container = containerRef.current;
     if (container) {
       container.addEventListener("mousemove", handleMouseMove);
+      requestRef.current = requestAnimationFrame(animate);
     }
 
     return () => {
       if (container) {
         container.removeEventListener("mousemove", handleMouseMove);
       }
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+      }
     };
-  }, []);
+  }, [controls, isMouseAnimationActive]);
 
   useEffect(() => {
     const items = document.querySelectorAll('.item');
@@ -109,6 +132,8 @@ function GalleryApp() {
   }, [items]);
 
   const handleImageClick = (id: string) => {
+    setIsMouseAnimationActive(false); // Disable mouse animation
+
     const items = document.querySelectorAll('.item');
     items.forEach(item => {
       const computedHeight = window.getComputedStyle(item).height;
@@ -119,6 +144,7 @@ function GalleryApp() {
     });
     setTimeout(() => {
       navigate(`/detail/${id}`);
+      setIsMouseAnimationActive(true); // Re-enable mouse animation after navigation
     }, 500);
   };
 
@@ -131,12 +157,7 @@ function GalleryApp() {
             transition={{ duration: 0.5 }}
           >
             <div className="container" ref={containerRef}>
-            <Header menuIsActive={menuIsActive} setMenuIsActive={setMenuIsActive}/>
-      <Menu menuIsActive={menuIsActive}/>
-      {/* <CenteredPixelTransition menuIsActive={menuIsActive}/> */}
-      {/* <HorizontalPixelTransition menuIsActive={menuIsActive}/> */}
-      <VerticalPixelTransition menuIsActive={menuIsActive}/>
-              <div className="gallery__container" ref={galleryRef}>
+              <motion.div className="gallery__container" ref={galleryRef} animate={controls}>
                 <div className="gallery">
                 {items.map((item) => (
                   <motion.div key={item.id} className="item" layout>
@@ -148,7 +169,7 @@ function GalleryApp() {
                   </motion.div>
                 ))}
                 </div>
-              </div>
+              </motion.div>
             </div>
           </motion.div>
         } />
