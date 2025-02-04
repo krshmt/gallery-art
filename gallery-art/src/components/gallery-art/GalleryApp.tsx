@@ -80,13 +80,13 @@ function GalleryApp() {
     };
 
     const animate = () => {
-      mouseX += (targetX - mouseX) * 0.2;
-      mouseY += (targetY - mouseY) * 0.2;
+      mouseX += (targetX - mouseX) * 0.1;
+      mouseY += (targetY - mouseY) * 0.1;
 
       controls.start({
         x: `calc(-50% + ${mouseX}px)`,
         y: `calc(-50% + ${mouseY}px)`,
-        transition: { type: "spring", stiffness: 70, damping: 10 }
+        transition: { type: "spring", stiffness: 50, damping: 10 }
       });
 
       requestRef.current = requestAnimationFrame(animate);
