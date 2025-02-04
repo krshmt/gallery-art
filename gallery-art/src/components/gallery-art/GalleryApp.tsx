@@ -80,13 +80,13 @@ function GalleryApp() {
     };
 
     const animate = () => {
-      mouseX += (targetX - mouseX) * 0.2; // Increase the factor to make the movement faster
-      mouseY += (targetY - mouseY) * 0.2; // Increase the factor to make the movement faster
+      mouseX += (targetX - mouseX) * 0.2;
+      mouseY += (targetY - mouseY) * 0.2;
 
       controls.start({
         x: `calc(-50% + ${mouseX}px)`,
         y: `calc(-50% + ${mouseY}px)`,
-        transition: { type: "spring", stiffness: 300, damping: 30 }
+        transition: { type: "spring", stiffness: 70, damping: 10 }
       });
 
       requestRef.current = requestAnimationFrame(animate);
