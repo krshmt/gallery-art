@@ -1,12 +1,10 @@
 import { Route, Routes, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import { gsap } from 'gsap';
 import images from "../../data/images";
 import Detail from '../detail/Detail';
 import Lenis from '@studio-freight/lenis';
-import Header from '../header/';
-import Menu from '../menu/';
-import VerticalPixelTransition from '../pixelTransition/vertical/';
 import "./GalleryApp.css";
 
 function GalleryApp() {
@@ -15,10 +13,10 @@ function GalleryApp() {
   const [items, setItems] = useState<any[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
-  const [menuIsActive, setMenuIsActive] = useState(false);
   const controls = useAnimation();
   const requestRef = useRef<number>();
   const [isMouseAnimationActive, setIsMouseAnimationActive] = useState(true);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -61,52 +59,64 @@ function GalleryApp() {
     };
     generateItems();
 
+    
+    if (location.pathname !== "/") return;
+  
     let mouseX = 0;
-    let mouseY = 0;
-    let targetX = 0;
-    let targetY = 0;
+  let mouseY = 0;
+  let targetX = 0;
+  let targetY = 0;
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isMouseAnimationActive) return;
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isMouseAnimationActive) return;
 
-      const { clientX, clientY, currentTarget } = e;
-      const { width, height } = (currentTarget as HTMLElement).getBoundingClientRect();
-      const centerX = width / 2;
-      const centerY = height / 2;
+    const { clientX, clientY, currentTarget } = e;
+    if (!currentTarget) return;
 
-      const sensitivity = 1;
-      targetX = (centerX - clientX) / sensitivity;
-      targetY = (centerY - clientY) / sensitivity;
-    };
+    const { width, height } = (currentTarget as HTMLElement).getBoundingClientRect();
+    const centerX = width / 2;
+    const centerY = height / 2;
 
-    const animate = () => {
-      mouseX += (targetX - mouseX) * 0.1;
-      mouseY += (targetY - mouseY) * 0.1;
+    const sensitivity = 1;
+    targetX = (centerX - clientX) / sensitivity;
+    targetY = (centerY - clientY) / sensitivity;
+  };
 
-      controls.start({
-        x: `calc(-50% + ${mouseX}px)`,
-        y: `calc(-50% + ${mouseY}px)`,
-        transition: { type: "spring", stiffness: 50, damping: 10 }
-      });
+  const animate = () => {
+    mouseX += (targetX - mouseX) * 0.1;
+    mouseY += (targetY - mouseY) * 0.1;
 
-      requestRef.current = requestAnimationFrame(animate);
-    };
+    controls.start({
+      x: `calc(-50% + ${mouseX}px)`,
+      y: `calc(-50% + ${mouseY}px)`,
+      transition: { type: "spring", stiffness: 50, damping: 10 }
+    });
 
-    const container = containerRef.current;
+    requestRef.current = requestAnimationFrame(animate);
+  };
+
+  const container = containerRef.current;
+  if (container) {
+    container.addEventListener("mousemove", handleMouseMove);
+    requestRef.current = requestAnimationFrame(animate);
+  }
+
+  return () => {
     if (container) {
-      container.addEventListener("mousemove", handleMouseMove);
-      requestRef.current = requestAnimationFrame(animate);
+      container.removeEventListener("mousemove", handleMouseMove);
     }
+    if (requestRef.current) {
+      cancelAnimationFrame(requestRef.current);
+    }
+  };
+}, [controls, isMouseAnimationActive, location.pathname]);
 
-    return () => {
-      if (container) {
-        container.removeEventListener("mousemove", handleMouseMove);
-      }
-      if (requestRef.current) {
-        cancelAnimationFrame(requestRef.current);
-      }
-    };
-  }, [controls, isMouseAnimationActive]);
+  useEffect(() => {
+    if (location.pathname === "/") {
+      setIsMouseAnimationActive(true); 
+    }
+  }, [location]);
+  
 
   useEffect(() => {
     const items = document.querySelectorAll('.item');
@@ -132,7 +142,9 @@ function GalleryApp() {
   }, [items]);
 
   const handleImageClick = (id: string) => {
-    setIsMouseAnimationActive(false); // Disable mouse animation
+    if (isNavigating) return; // Prevent double navigation
+    setIsNavigating(true);
+    setIsMouseAnimationActive(false); 
 
     const items = document.querySelectorAll('.item');
     items.forEach(item => {
@@ -145,8 +157,19 @@ function GalleryApp() {
     setTimeout(() => {
       navigate(`/detail/${id}`);
       setIsMouseAnimationActive(true); // Re-enable mouse animation after navigation
+      setIsNavigating(false); // Reset navigation state
     }, 500);
   };
+
+  useEffect(() => {
+    if (location.pathname.startsWith('/detail')) {
+      gsap.fromTo(
+        '.detail-container',
+        { y: '100vh' },
+        { y: 0, duration: 0.5 }
+      );
+    }
+  }, [location]);
 
   return (
     <AnimatePresence exitBeforeEnter>
@@ -162,9 +185,9 @@ function GalleryApp() {
                 {items.map((item) => (
                   <motion.div key={item.id} className="item" layout>
                     <div className="preview-img">
-                      <Link to={`/detail/${item.id}`} onClick={() => handleImageClick(item.id)}>
+                      <div onClick={() => handleImageClick(item.id)}>
                         <img src={item.image.src} alt={item.image.title} />
-                      </Link>
+                      </div>
                     </div>
                   </motion.div>
                 ))}
@@ -174,14 +197,7 @@ function GalleryApp() {
           </motion.div>
         } />
         <Route path="/detail/:id" element={
-          <motion.div
-            initial={{ y: '100vh' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100vh' }}
-            transition={{ duration: 0.5 }}
-          >
-            <Detail />
-          </motion.div>
+          <Detail />
         } />
       </Routes>
     </AnimatePresence>
